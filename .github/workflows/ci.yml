@@ -38,4 +38,10 @@ jobs:
           assert not missing, f'Missing manifest resources: {missing}'
           print(f"Validated manifest v{manifest['manifest_version']} and {len(refs)} referenced resource(s)")
           PY
-          git ls-files -z -- '*.js' -- '*.mjs' | xargs -0 -r -n1 node --check
+          while IFS= read -r -d '' file; do
+            case "$file" in
+              content.js|popup/popup.js) node --check "$file" ;;
+              *) node --input-type=module --check < "$file" ;;
+            esac
+            echo "Checked JavaScript syntax: $file"
+          done < <(git ls-files -z -- '*.js' -- '*.mjs')
